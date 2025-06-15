@@ -34,7 +34,7 @@ const userProfile = asyncErrorHandler(async(req , res , next)=>{
     console.log('user data',data.id);
     if(!token) next(new CustomError('un-authorized please login' , 404));
     const user = await User.findOne({_id:data.id});
-    await new Promise(res => setTimeout(res, 1000));
+    // await new Promise(res => setTimeout(res, 1000));
     res.status(200).json({        
         status:'sucess',
         data:{
