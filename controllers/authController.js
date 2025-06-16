@@ -27,18 +27,19 @@ exports.sendOtp = async (req, res) => {
     throw new Error('Twilio credentials are missing! Check your .env file and dotenv config.');
   }
 
+  
 
   let mobileNumber = `+91${mobile.toString()}`;
   console.log(mobileNumber);
-  client.messages
-    .create({
-      body: ` OTP to login to YI Raipur is  ${code}`,
-      to: `whatsapp:${mobileNumber}`,
-      // from: 'whatsapp:+17344047768',
-      from : 'whatsapp:+14155238886'
-    })
-    .then((message) => console.log(message.sid))
-    .catch((err) => console.error(err));
+  // client.messages
+  //   .create({
+  //     body: ` OTP to login to YI Raipur is  ${code}`,
+  //     to: `whatsapp:${mobileNumber}`,
+  //     // from: 'whatsapp:+17344047768',
+  //     from : 'whatsapp:+14155238886'
+  //   })
+  //   .then((message) => console.log(message.sid))
+  //   .catch((err) => console.error(err));
     res.status(200).json({ success: true, message: 'OTP sent successfully' });
 };
 
