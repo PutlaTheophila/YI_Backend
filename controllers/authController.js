@@ -5,12 +5,12 @@ require('dotenv').config();
 // twilio requirements
 const accountSid = process.env.TWILIO_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
-const client = require('twilio')(accountSid, authToken);
+const client = require('twilio')(accountSid, authToken );
 
 exports.sendOtp = async (req, res) => {
   const { mobile } = req?.body;
 
-  await new Promise(res => setTimeout(res, 3000)); // 3-second delay
+  // await new Promise(res => setTimeout(res, 3000)); // 3-second delay
 
   if (!mobile) return res.status(400).json({ error: 'Mobile number is required' });
 
