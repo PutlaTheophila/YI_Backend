@@ -9,8 +9,4 @@ mongoose.connect(`mongodb+srv://putlatheophila123:${process.env.MONGO_DB_SECRET}
     app.listen(process.env.PORT , ()=>{
         console.log(`app is listening on port ${process.env.PORT}`);
     })
-})
-
-
-
-
+});

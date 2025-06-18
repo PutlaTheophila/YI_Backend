@@ -16,6 +16,7 @@ const eventSchema = new mongoose.Schema({
   
   title: { type: String, required: true },
   subTitle: { type: String },
+  
   description: { type: String },
   bannerImageUrl: { type: String }, // S3 or Firebase image link
 

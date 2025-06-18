@@ -58,7 +58,7 @@ exports.verifyOtp = async (req, res) => {
   
     let existingUser = true;
     let user = await User.findOne({ mobile : mobile });
-    console.log(user);
+    console.log( 'hi', user);
     if (!user) {
       existingUser = false;
     }

@@ -2,18 +2,63 @@ const CustomError = require("../utils/customError.js");
 const mongoose = require("mongoose");
 const User = require('../models/userModel.js');
 const asyncErrorHandler = require('../utils/asyncErrorHandler.js');
-const { verifyToken } = require("../utils/jwt.js");
+const { verifyToken, createToken } = require("../utils/jwt.js");
 require('dotenv').config;
 
 
-const createUser = asyncErrorHandler(async(req , res , next) =>{
-    const data = req.body;
-    const user = await User.create(data);
+const parseIfString = (val) => {
+  if (typeof val === 'string') {
+    try {
+      return JSON.parse(val);
+    } catch (e) {
+      return [];
+    }
+  }
+  return val;
+};
+
+const createUser = asyncErrorHandler(async (req, res, next) => {
+  try {
+    const body = req.body;
+
+    console.log(req.body);
+  
+let parsedData = {
+  name: body.name,
+  mobile: body.mobile,
+  dateOfBirth: new Date(body.dateOfBirth),
+    industry : parseIfString(req.body.industry),
+ interestAreas : parseIfString(req.body.interestAreas),
+
+  yiRole: body.yiRole || 'Member',                  
+  yiTeam: body.yiTeam || 'NA',                  
+  yiMytri: body.yiMytri || 'NA',              
+  yiProjects: body.yiProjects || 'NA',         
+  yiInitiatives: body.yiInitiatives|| "NA"   
+};
+
+console.log(parsedData);
+
+    // 🖼 If using multer with image upload
+    if (req.file) {
+        parsedData = {...parsedData , profilePhotoUrl : req.file.path};
+        console.log(req.file.path); // or full path if you're storing URLs
+    }
+
+    const user = await User.create(parsedData);
+
+    const token = await createToken(user._id);
+
     res.status(200).json({
-        status:'success',
-        data:user
-    })
-})
+      status: 'success',
+      token,
+      data:user
+    });
+  } catch (error) {
+    next(error); // will hit your global error handler
+  }
+});
+
 
 const getUser = asyncErrorHandler(async (req  , res , next)=>{    
     const id = req.params.id;
@@ -45,13 +90,12 @@ const userProfile = asyncErrorHandler(async(req , res , next)=>{
 
 const getAllUsers = asyncErrorHandler(async(req, res , next)=>{
     const users = await User.find({});
-    await new Promise(res => setTimeout(res, 1000));
+    // await new Promise(res => setTimeout(res, 1000));
     res.status(200).json({
         status : "success",
         data : users
     })
 })
-
 
 const deleteUser = asyncErrorHandler(async(req,res)=>{
     const id = req.params.id;

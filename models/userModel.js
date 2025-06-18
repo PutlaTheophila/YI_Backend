@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema({
     type: String, // URL or path to uploaded photo
   },
   industry: {
-    type: String,
+    type: [String],
     required: true,
     enum: [
       'Technology',

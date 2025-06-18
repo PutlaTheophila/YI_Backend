@@ -25,5 +25,13 @@
   "devDependencies": {
     "nodemon": "^3.1.10"
   },
-  "description": ""
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PutlaTheophila/YI_Backend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/PutlaTheophila/YI_Backend/issues"
+  },
+  "homepage": "https://github.com/PutlaTheophila/YI_Backend#readme"
 }
