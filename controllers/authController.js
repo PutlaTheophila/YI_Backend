@@ -52,10 +52,12 @@ exports.verifyOtp = async (req, res) => {
     const otpDoc = await Otp.findOne({ mobile });
     console.log(otpDoc);
   
-    if (!otpDoc || otpDoc.code !== code || otpDoc.expiresAt < new Date()) {
+    // if (!otpDoc || otpDoc.code !== code || otpDoc.expiresAt < new Date()) {
+    //   return res.status(400).json({ error: 'Invalid or expired OTP' });
+    // }
+        if (!otpDoc) {
       return res.status(400).json({ error: 'Invalid or expired OTP' });
     }
-  
     let existingUser = true;
     let user = await User.findOne({ mobile : mobile });
     console.log( 'hi', user);
