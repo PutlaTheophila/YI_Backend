@@ -15,6 +15,7 @@ const sendData = asyncErrorHandler(async(req ,res)=>{
     const userProfile = user?.profilePhotoUrl;
 
     const rsvps = user.events.rsvps;
+    console.log(rsvps);
     let rsvpEvents = [];
     rsvps.forEach(async (id , index)=>{
         let event = await Event.findById(id);

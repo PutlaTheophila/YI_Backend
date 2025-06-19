@@ -1,6 +1,9 @@
 const Event = require('../models/eventModel.js');
 const asyncErrorHandler = require('../utils/asyncErrorHandler.js');
 const CustomError = require('../utils/customError.js');
+const User = require('../models/userModel.js');
+const { verify } = require('jsonwebtoken');
+const { verifyToken } = require('../utils/jwt.js');
 
 const createEvent = asyncErrorHandler(async(req , res)=>{
     try{
@@ -97,16 +100,38 @@ const getEvent = asyncErrorHandler(async(req , res , next)=>{
     })
 })
 
-const deleteEvent = asyncErrorHandler(async(req, res)=>{
-    const id = req.params.id
-    if(!id) next(new CustomError('invalid id of the event' , 400))
-    const event = await Event.findByIdAndDelete(id)
-    if(!event) next(new CustomError('no event record found ' , 400))
+const deleteEvent = asyncErrorHandler(async (req, res, next) => {
+    const id = req.params.id;
+
+    if (!id) {
+        return next(new CustomError('Invalid event ID', 400));
+    }
+
+    // 1. Delete the event
+    const event = await Event.findByIdAndDelete(id);
+    if (!event) {
+        return next(new CustomError('No event found with this ID', 404));
+    }
+
+    // 2. Remove this event ID from each user's events.rsvps array
+    const rsvpUserIds = event.rsvps.map(r => r.userId);
+
+    await Promise.all(
+        rsvpUserIds.map(userId =>
+        User.updateOne(
+            { _id: userId },
+            { $pull: { 'events.rsvps': id } }
+        )
+        )
+    );
+
     res.status(200).json({
-        status : 'success',
-        event
-    })
-})
+        status: 'success',
+        message: 'Event deleted and removed from user RSVPs',
+        event,
+    });
+});
+
 
 const createEvents = asyncErrorHandler(async(req, res)=>{
     const data = await req.body;
@@ -118,6 +143,35 @@ const createEvents = asyncErrorHandler(async(req, res)=>{
 
 })
 
+
+const rsvpEvent = asyncErrorHandler(async (req, res, next) => {
+  const token = req.headers.token;
+  if (!token) return next(new CustomError('Token is missing', 401));
+
+  const userId = await verifyToken(token).id;
+  const eventId = req.params.id;
+  if (!eventId) return next(new CustomError('Event ID is missing', 400));
+
+  const event = await Event.findById(eventId);
+  if (!event) return next(new CustomError('Event not found', 404));
+
+  // Update event rsvps
+  await Event.findByIdAndUpdate(eventId, {
+    $push: { rsvps: { userId } },
+  });
+
+  // Update user rsvp list
+  await User.findByIdAndUpdate(userId, {
+    $addToSet: { 'events.rsvps': eventId },
+  });
+
+  res.status(200).json({
+    status: 'success',
+    message: 'RSVP successful',
+  });
+});
+
+
 module.exports = {
-    createEvent , getAllEvents , getEvent , deleteEvent , createEvents
+    createEvent , getAllEvents , getEvent , deleteEvent , createEvents , rsvpEvent
 }

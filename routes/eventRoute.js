@@ -1,5 +1,5 @@
 const express = require('express');
-const { getAllEvents, createEvent, getEvent, deleteEvent , createEvents} = require('../controllers/eventController');
+const { getAllEvents, createEvent, getEvent, deleteEvent , createEvents, rsvpEvent} = require('../controllers/eventController');
 const upload = require('../mw/cloudinaryMiddleware.js');
 const eventRouter = express.Router();
 
@@ -18,6 +18,9 @@ eventRouter.route('/:id')
 
 eventRouter.route('/createmultiple')
   .post(createEvents)
+
+eventRouter.route('/rsvpevent/:id')
+    .get(rsvpEvent)
 
 
 module.exports = eventRouter;
