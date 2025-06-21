@@ -20,24 +20,22 @@ const parseIfString = (val) => {
 const createUser = asyncErrorHandler(async (req, res, next) => {
   try {
     const body = req.body;
-
     console.log(req.body);
-  
-let parsedData = {
-  name: body.name,
-  mobile: body.mobile,
-  dateOfBirth: new Date(body.dateOfBirth),
-    industry : parseIfString(req.body.industry),
- interestAreas : parseIfString(req.body.interestAreas),
+    let parsedData = {
+    name: body.name,
+    mobile: body.mobile,
+    dateOfBirth: new Date(body.dateOfBirth),
+        industry : parseIfString(req.body.industry),
+    interestAreas : parseIfString(req.body.interestAreas),
 
-  yiRole: body.yiRole || 'Member',                  
-  yiTeam: body.yiTeam || 'NA',                  
-  yiMytri: body.yiMytri || 'NA',              
-  yiProjects: body.yiProjects || 'NA',         
-  yiInitiatives: body.yiInitiatives|| "NA"   
-};
+    yiRole: body.yiRole || 'Member',                  
+    yiTeam: body.yiTeam || 'not-specified',                  
+    yiMytri: body.yiMytri || 'not-specified',              
+    yiProjects: body.yiProjects || 'not-specified',         
+    yiInitiatives: body.yiInitiatives|| "not-specified"   
+    };
 
-console.log(parsedData);
+    console.log(parsedData);
 
     // 🖼 If using multer with image upload
     if (req.file) {
@@ -88,6 +86,21 @@ const userProfile = asyncErrorHandler(async(req , res , next)=>{
     })
 })
 
+
+const updateUser = asyncErrorHandler(async(req , res , next)=>{
+    const token = await req.headers.token;
+    if(!token){
+
+    }
+    const {id:userId} = await verifyToken(token);
+    const user = await User.findById(id);
+    if(req.file){
+
+    }
+
+})
+
+
 const getAllUsers = asyncErrorHandler(async(req, res , next)=>{
     const users = await User.find({});
     // await new Promise(res => setTimeout(res, 1000));
@@ -111,10 +124,28 @@ const deleteUser = asyncErrorHandler(async(req,res)=>{
 })
 
 
-const updateUser = asyncErrorHandler(async(req, res)=>{
+const updateUserProfile = asyncErrorHandler(async(req, res)=>{
     const data = req.body;
-    const id = req.params.id;
-    const user = await User.findByIdAndUpdate(id , data);
+    const body = req.body;
+    console.log(body);
+    const token = req.headers.token;
+    console.log('token: ',token);
+    const {id:userId} = await verifyToken(token);
+    console.log(await verifyToken(token));
+    console.log('id is ', userId);
+    let parsedData = {
+        yiRole: body.yiRole || 'Member',                  
+        yiTeam: body.yiTeam || 'NA',                  
+        yiMytri: body.yiMytri || 'NA',              
+        yiProjects: body.yiProjects || 'NA',         
+        yiInitiatives: body.yiInitiatives|| "NA" 
+    }
+    if(req.file){
+       parsedData =  {...parsedData , profilePhotoUrl:req.file.path}
+    }
+    console.log(parsedData);
+    await User.findByIdAndUpdate(userId, parsedData);
+    const user = await User.findByIdAndUpdate(userId);
     res.status(200).json({
         status:'success',
         user
@@ -128,5 +159,6 @@ module.exports = {
     getAllUsers,
     deleteUser,
     userProfile,
-    updateUser
+    updateUser,
+    updateUserProfile
 }

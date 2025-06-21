@@ -44,8 +44,8 @@ const userSchema = new mongoose.Schema({
   },
   yiTeam: {
     type: String,
-    enum: ['J9 Power', 'Piramal Fires', 'Zoff Strikers', 'OBCL Riders', 'NA'],
-    default: 'NA',
+    enum: ['J9 Power', 'Piramal Fires', 'Zoff Strikers', 'OBCL Riders', 'NA','not-specified'],
+    default: 'not-specified',
   },
   interestAreas: {
     type: [String],
@@ -60,18 +60,18 @@ const userSchema = new mongoose.Schema({
   },
   yiMytri: {
     type: String,
-    enum: ['Membership', 'Yuva', 'Thalir', 'Rural Initiative', 'NA'],
-    default: 'NA',
+    enum: ['Membership', 'Yuva', 'Thalir', 'Rural Initiative', 'NA','not-specified'],
+    default: 'not-specified',
   },
   yiProjects: {
     type: String,
-    enum: ['Masoom', 'Road safety', 'Climate Action', 'Accessibility', 'Health', 'NA'],
-    default: 'NA',
+    enum: ['Masoom', 'Road safety', 'Climate Action', 'Accessibility', 'Health', 'NA','not-specified'],
+    default: 'not-specified',
   },
   yiInitiatives: {
     type: String,
-    enum: ['Learning', 'Entrepreneurship', 'Innovation', 'NA'],
-    default: 'NA',
+    enum: ['Learning', 'Entrepreneurship', 'Innovation', 'NA','not-specified'],
+    default: 'not-specified',
   },
   events: {
     rsvps: [

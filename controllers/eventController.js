@@ -26,60 +26,6 @@ const createEvent = asyncErrorHandler(async(req , res)=>{
 
 }) 
 
-
-
-// const createEvent = asyncErrorHandler(async (req, res) => {
-
-//   const data = req.body;
-//   console.log(data);
-//   const files = req.file.path;
-
-//   // Parse JSON fields
-//   const parsedTags = JSON.parse(data.tags || '[]');
-//   const parsedAttendees = JSON.parse(data.attendees || '[]');
-
-//   // ✅ Banner image
-//   const bannerFile = files.find((f) => f.fieldname === 'image');
-//   console.log('theo',bannerFile.path);
-//   if (!bannerFile) {
-//     return res.status(400).json({ error: 'Banner image is required' });
-//   }
-
-//   const venue = {
-//     isOnline: data.isOnline === 'true',
-//     name: data.venueName || '',
-//     address: data.venueAddress || '',
-//     locationLink: data.locationLink || '',
-//   };
-
-//   const newEvent = await Event.create({
-//     title: data.title || 'sample',
-//     subTitle: data.subTitle || '',
-//     description: data.description || '',
-//     bannerImageUrl: bannerFile.path,
-//     category: data.category,
-//     tags: parsedTags,
-//     date: data.startDate, // required
-//     endDate: data.endDate || null,
-//     rsvpDeadline: data.rsvpDeadline || null,
-//     maxCapacity: data.maxCapacity || null,
-//     venue,
-//     // attendees: attendeeData,
-
-//     // These are system-generated / optional
-//     createdBy: req.user?._id || undefined, // Optional: populate from auth middleware
-//     isPublished: false,
-//     isDeleted: false,
-//   });
-
-//   res.status(200).json({
-//     status: 'success',
-//     data: newEvent,
-//   });
-// });
-
-
-
 const getAllEvents = asyncErrorHandler(async(re, res)=>{
     const events = await Event.find({});
     res.status(200).json({
@@ -93,6 +39,7 @@ const getEvent = asyncErrorHandler(async(req , res , next)=>{
     const id = await req.params.id;
     if(!id) next(new CustomError('invalid id of the event' , 400))
     const event = await Event.findById(id);
+    console.log('hi form get event')
     if(!event) next(new CustomError('no event record found ' , 400))
     res.status(200).json({
         status : 'success',
@@ -146,32 +93,70 @@ const createEvents = asyncErrorHandler(async(req, res)=>{
 
 const rsvpEvent = asyncErrorHandler(async (req, res, next) => {
   const token = req.headers.token;
-  if (!token) return next(new CustomError('Token is missing', 401));
+  if (!token) return next(new CustomError('Token missing', 401));
 
-  const userId = await verifyToken(token).id;
+  const {id:userId} = await verifyToken(token);
   const eventId = req.params.id;
-  if (!eventId) return next(new CustomError('Event ID is missing', 400));
 
+  const user = await User.findById(userId);
+  if (!eventId) return next(new CustomError('No event ID provided', 400));
+
+    await new Promise(res => setTimeout(res, 3000));
   const event = await Event.findById(eventId);
   if (!event) return next(new CustomError('Event not found', 404));
 
-  // Update event rsvps
-  await Event.findByIdAndUpdate(eventId, {
-    $push: { rsvps: { userId } },
-  });
+  // ✅ Check if user already RSVPed
+  const alreadyRSVPed = user.events.rsvps.includes(eventId);
 
-  // Update user rsvp list
+  if (alreadyRSVPed) {
+    return res.status(200).json({
+      status: 'success',
+      message: 'Already RSVPed',
+    });
+  }
+
+  // ✅ Add to event.rsvps
+  event.rsvps.push({ userId });
+  await event.save();
+
+  // ✅ Add to user.events.rsvps
   await User.findByIdAndUpdate(userId, {
-    $addToSet: { 'events.rsvps': eventId },
+    $addToSet: { 'events.rsvps': eventId }, // ensures no duplicate event IDs in user
   });
 
   res.status(200).json({
     status: 'success',
-    message: 'RSVP successful',
+    message: 'RSVP added',
   });
 });
 
 
+
+const getEventsForEventsScreen  = asyncErrorHandler(async(req, res, next)=>{
+        console.log(req.query);
+    const { tags, offset = 0, limit = 10 } = req.query;
+    await new Promise(res => setTimeout(res, 2000));
+    console.log(req.query);
+  const tagList = tags ? tags.split(',') : [];
+
+  const filter = tagList.length > 0
+    ? { tags: { $all: tagList } } // Match events that include *all* selected tags
+    : {};
+
+  const events = await Event.find(filter)
+    .sort({ date: -1 }) // optional
+    .skip(Number(offset))
+    .limit(Number(limit));
+
+  res.status(200).json({
+    success: true,
+    events,
+  });
+})
+
+
+//68535dacf2e0d84aed099f7b
+
 module.exports = {
-    createEvent , getAllEvents , getEvent , deleteEvent , createEvents , rsvpEvent
+    createEvent , getAllEvents , getEvent , deleteEvent , createEvents , rsvpEvent , getEventsForEventsScreen
 }

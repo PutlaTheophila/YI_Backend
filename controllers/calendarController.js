@@ -29,9 +29,31 @@ const sendEventDates = asyncErrorHandler(async(req,res)=>{
 });
 
 
+const sendEventsForDate = asyncErrorHandler(async (req, res) => {
+  const dateStr = req.params.date; // e.g., "2025-07-05"
+
+  const startOfDay = new Date(`${dateStr}T00:00:00.000Z`);
+  const endOfDay = new Date(`${dateStr}T23:59:59.999Z`);
+
+  const events = await Event.find({
+    date: {
+      $gte: startOfDay,
+      $lte: endOfDay,
+    },
+  });
+
+  res.status(200).json({
+    status: 'success',
+    events,
+  });
+});
+
+
+
 
 
 
 module.exports = {
-    sendEventDates
+    sendEventDates,
+    sendEventsForDate
 }

@@ -1,8 +1,11 @@
 const express = require('express');
 const calendarRouter = express.Router();
-const {sendEventDates} = require('../controllers/calendarController.js');
+const {sendEventDates, sendEventsForDate} = require('../controllers/calendarController.js');
 
 calendarRouter.route('/')
     .get(sendEventDates)
+
+calendarRouter.route('/:date')
+    .get(sendEventsForDate)
 
 module.exports = calendarRouter;
